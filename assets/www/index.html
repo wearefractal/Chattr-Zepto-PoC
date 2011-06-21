@@ -2,50 +2,83 @@
 <html lang="en">
   <head>
     <title>Chattr</title>
-    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.5.min.js"></script>
-    <script type="text/javascript" src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="android-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <link href="css/iphone.css" media="screen" rel="stylesheet" type="text/css" />
     <script src="nowjs/now.js"></script>
+    <script src="zepto/zepto.js"></script>
     <script>
- 
- 	var chatName;
+      var currentList;
+      var currentChatroom;
+ 	  var mainView = "chatroomList";
+ 	  var currentView;
  
       $(document).ready(function(){
- 
+ 		$("#" + mainView).addClass("current");
+ 		
+ 		now.ready(function(){
+ 			now.requestRooms("fake coordinates here");
+ 		});
+ 		
         now.receiveMessage = function(name, message){
-          $("#incomingMessages").append("<div class='message'><span class='username'>" + name + ":</span> " + message + "</div>");
-          $("#incomingMessages").scrollTop($("#incomingMessages")[0].scrollHeight);
+	          $("#incomingMessages").append("<div class='message'><span class='username'>" + name + ":</span> " + message + "</div>");
+	          $("#incomingMessages").scrollTop($("#incomingMessages")[0].scrollHeight);
+        }
+        
+        now.clientJoinChat = function(chat){
+        	currentChatroom = chat;
+      		if(now.name == undefined){
+      			now.name = prompt("Input name for '" + currentChatroom.name + "'");
+      		}
+ 		 	$("#incomingMessages").empty();
+ 		 	$("#chatTitle").empty();
+       	 	$("#chatTitle").append("<h1>" + currentChatroom.name + "</h1>");
+       	 	now.serverJoinChat(currentChatroom);
+       	 	switchView("chatPage");		
+      	}
+        
+        now.receiveRooms = function(rooms){
+        	currentList = rooms;
+        	$("#chatrooms").empty();
+        	for(var i = 0; i < rooms.length; i++){
+        		var chat = rooms[i];
+        		$("#chatrooms").append("<li class=\"arrow\"><a id=\"" + i + "\" href=\"#\">" + chat.name + "</a></li>");
+        	}
         }
  
-        $("#chatNameButton").click(function(){
-       
-          $(location).attr('href',"#chatroomListPage");
+	    $("#chatrooms li a").live("click", function(event){	
+	    	var idx = parseInt($(event.currentTarget).attr("id"));
+ 		 	now.clientJoinChat(currentList[idx]);
+        });
+ 
+        $("#chatSendButton").live("click", function(){
+	          now.distributeMessage(currentChatroom, $("#messageText").val());
+	          $("#messageText").val("");
+        });
         
+        $("#newChat").live("click", function(){
+	          now.createNewChatroom("fake coordinates here", prompt("Enter Chat Name:"));
         });
- 
-	    $("#chatrooms li a").click(function(){
-						
-          $(location).attr('href',"index.html#chatPage");			
- 
- 		 now.name = prompt("Name for chat 'Citizen'", "Anonymous");
-       
-        });
- 
-        $("#chatSendButton").click(function(){
-          now.distributeMessage($("#messageText").val());
-          $("#messageText").val("");
-        });
- 
- 
       });
       
-      function getChatName()
-      {
-		 var chatName = $("#chatNameText").val().trim();
-          if(chatName.length <= 0)
-            chatName = "Anonymous";
-              	
-      	 return chatName;
+      function switchView(newView){
+	      	if(newView == undefined){
+	      		newView = mainView;
+	      	}
+	      	if(currentView == undefined){
+	      		currentView = mainView;
+	      	}
+            
+            //Cleanup
+            $("#" + currentView).removeClass("current").addClass("reverse");
+            $(".current .back").remove();
+            
+            //Write new shit
+            $("#" + newView).removeClass("reverse").addClass("current");
+            $(".current .toolbar").prepend("<a href='#' onclick='switchView(\"" + currentView + "\")' class='back'>Back</a>");
+            currentView = newView;
       }
     </script>
     <style>
@@ -61,53 +94,42 @@
       .msgContainerDiv
       {
         overflow-y: scroll;
-        height: 300px;
       }
     </style>
   </head> 
  
   <body> 
-
+  <div id="content">
  	<!-- #### CHATROOM LIST page #### -->
- 
- 	<div data-role="page" id="chatroomListPage" data-role="page" data-theme="a">
- 
-        <div data-role="header">
-            <h1>Chattr</h1>
-        </div>
-   		
-   		<div data-role="content">
-   		
-   			<ul id = "chatrooms" data-role="listview" data-inset="true" data-theme="a" data-dividertheme="a"> 
-				<li data-role="list-divider">Available Chats</li> 
-				<li><a id = "1022031">Gangplank</a></li> 
+ 		<section id="chatroomList">
+	 		<div class="toolbar">
+		    	<h1>Available Chats</h1>
+		    	<a id="newChat" href="#" class="add">New Chat</a>
+		    </div>
+	   		
+	   		<ul id="chatrooms"> 
+	   			<li class="arrow"><a id="1">Global Chat</a></li>
 			</ul> 
-   		
-   		</div>
-   		
-   	</div>
+		</section>
    
    <!-- #### CHAT page #### -->
  
-    <div data-role="page" id="chatPage" data-role="page" data-theme="a">
+    <section id="chatPage" class="reverse">
  
-        <div data-role="header">
-            <h1>Gangplank</h1>
+        <div id="chatTitle" class="toolbar">
         </div>
  
-        <div data-role="content">
-        	
-        <div id="incomingMessages" name="incomingMessages" class="msgContainerDiv" ></div>
-
-			<table width = "100%">
-				<tr width = "100%">
-					<td width = "100%"><input type = "text" name="messageText" id="messageText" /></td>
-					<td> <div class="ui-block-b"><button data-theme="a" id="chatSendButton" name="chatSendButton">&raquo;</input></div></td>
+        <div id="incomingMessages" class="msgContainerDiv"></div>
+        
+        <div class="lowbar">
+			<table width="100%">
+				<tr>
+					<td><input type="text" id="messageText" /></td>
+					<td><button id="chatSendButton" class="button">Send</button></td>
 				</tr>
 			</table>
-      
-		</div> 
-    </div>
- 
+		</div>
+    </section>
+ </div>
   </body>
 </html>
