@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Chattr</title>
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.5.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
+    <script src="nowjs/now.js"></script>
+    <script>
+ 
+ 	var chatName;
+ 
+      $(document).ready(function(){
+ 
+        now.receiveMessage = function(name, message){
+          $("#incomingMessages").append("<div class='message'><span class='username'>" + name + ":</span> " + message + "</div>");
+          $("#incomingMessages").scrollTop($("#incomingMessages")[0].scrollHeight);
+        }
+ 
+        $("#chatNameButton").click(function(){
+       
+          $(location).attr('href',"#chatroomListPage");
+        
+        });
+ 
+	    $("#chatrooms li a").click(function(){
+						
+          $(location).attr('href',"index.html#chatPage");			
+ 
+ 		 now.name = prompt("Name for chat 'Citizen'", "Anonymous");
+       
+        });
+ 
+        $("#chatSendButton").click(function(){
+          now.distributeMessage($("#messageText").val());
+          $("#messageText").val("");
+        });
+ 
+ 
+      });
+      
+      function getChatName()
+      {
+		 var chatName = $("#chatNameText").val().trim();
+          if(chatName.length <= 0)
+            chatName = "Anonymous";
+              	
+      	 return chatName;
+      }
+    </script>
+    <style>
+      .message
+      {
+        padding: 5px 5px 5px 5px;
+      }
+      .username
+      {
+        font-weight: strong;
+        color: #0f0;
+      }
+      .msgContainerDiv
+      {
+        overflow-y: scroll;
+        height: 300px;
+      }
+    </style>
+  </head> 
+ 
+  <body> 
+
+ 	<!-- #### CHATROOM LIST page #### -->
+ 
+ 	<div data-role="page" id="chatroomListPage" data-role="page" data-theme="a">
+ 
+        <div data-role="header">
+            <h1>Chattr</h1>
+        </div>
+   		
+   		<div data-role="content">
+   		
+   			<ul id = "chatrooms" data-role="listview" data-inset="true" data-theme="a" data-dividertheme="a"> 
+				<li data-role="list-divider">Available Chats</li> 
+				<li><a id = "1022031">Gangplank</a></li> 
+			</ul> 
+   		
+   		</div>
+   		
+   	</div>
+   
+   <!-- #### CHAT page #### -->
+ 
+    <div data-role="page" id="chatPage" data-role="page" data-theme="a">
+ 
+        <div data-role="header">
+            <h1>Gangplank</h1>
+        </div>
+ 
+        <div data-role="content">
+        	
+        <div id="incomingMessages" name="incomingMessages" class="msgContainerDiv" ></div>
+
+			<table width = "100%">
+				<tr width = "100%">
+					<td width = "100%"><input type = "text" name="messageText" id="messageText" /></td>
+					<td> <div class="ui-block-b"><button data-theme="a" id="chatSendButton" name="chatSendButton">&raquo;</input></div></td>
+				</tr>
+			</table>
+      
+		</div> 
+    </div>
+ 
+  </body>
+</html>
